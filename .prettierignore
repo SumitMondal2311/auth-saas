@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+out
+generated
+migrations
+.DS_Store
+pnpm-lock.yaml
+*.tsbuildinfo
