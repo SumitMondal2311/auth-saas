@@ -2,18 +2,33 @@
     "name": "auth-saas",
     "private": true,
     "scripts": {
+        "build": "turbo build",
+        "check-types": "turbo check-types",
+        "clean": "turbo clean",
+        "dev": "turbo dev",
         "format": "prettier --write \"**/*.{json,js,mjs,ts,jsx,tsx}\"",
-        "prepare": "husky"
+        "lint": "eslint . --ext .tx,.tsx",
+        "lint:fix": "eslint . --fix",
+        "prepare": "husky",
+        "start": "turbo start"
     },
     "lint-staged": {
         "**/*.{json,js,mjs,ts,jsx,tsx}": "prettier --write"
     },
+    "dependencies": {
+        "zod": "^4.1.5"
+    },
     "devDependencies": {
+        "@eslint/eslintrc": "^3.3.1",
+        "cross-env": "^10.0.0",
+        "dotenv": "^17.2.1",
+        "eslint": "^9.34.0",
         "husky": "^9.1.7",
         "lint-staged": "^16.1.5",
         "prettier": "^3.6.2",
         "prettier-plugin-packagejson": "^2.5.19",
-        "turbo": "^2.5.6"
+        "turbo": "^2.5.6",
+        "typescript": "^5.9.2"
     },
     "packageManager": "pnpm@10.15.0",
     "engines": {

@@ -1,0 +1,8 @@
+{
+    "name": "@auth-saas/tsconfig",
+    "private": true,
+    "type": "module",
+    "exports": {
+        "./node": "./node.json"
+    }
+}
