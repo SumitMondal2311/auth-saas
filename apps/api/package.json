@@ -3,11 +3,12 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "cross-env NODE_ENV=production tsc",
+        "build": "tsc",
         "check-types": "tsc --noEmit",
         "clean": "rm -rf .turbo dist",
-        "dev": "cross-env NODE_ENV=development tsx watch ./src/server.ts",
-        "start": "cross-env NODE_ENV=production node ./dist/server.js"
+        "dev": "tsx watch ./src/server.ts",
+        "start": "NODE_ENV=development node ./dist/server.js",
+        "start:dev": "node ./dist/server.js"
     },
     "dependencies": {
         "cookie-parser": "^1.4.7",
@@ -17,6 +18,7 @@
         "morgan": "^1.10.0"
     },
     "devDependencies": {
+        "@auth-saas/database": "workspace:^",
         "@auth-saas/tsconfig": "workspace:^",
         "@types/cookie-parser": "^1.4.9",
         "@types/cors": "^2.8.19",

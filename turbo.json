@@ -7,8 +7,25 @@
         },
         "api#build": {
             "dependsOn": ["^build"],
-            "env": ["PORT", "API_ORIGIN", "WEB_ORIGIN"],
+            "env": ["PORT", "API_ORIGIN", "WEB_ORIGIN", "DATABASE_MAX_RETRIES", "DATABASE_URL"],
             "outputs": ["dist/**"]
+        },
+        "@auth-saas/database#build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist"]
+        },
+        "db:deploy": {
+            "cache": false
+        },
+        "db:migrate": {
+            "cache": false,
+            "persistent": true
+        },
+        "db:generate": {
+            "cache": false
+        },
+        "db:push": {
+            "cache": false
         },
         "check-types": {
             "dependsOn": ["^check-types"]

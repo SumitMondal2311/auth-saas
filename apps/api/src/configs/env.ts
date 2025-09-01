@@ -4,14 +4,7 @@ import { envSchema } from "./schemas.js";
 
 const NODE_ENV = process.env.NODE_ENV;
 config({
-    path: path.resolve(
-        process.cwd(),
-        NODE_ENV === "production"
-            ? ".env.production"
-            : NODE_ENV === "test"
-              ? ".env.test"
-              : ".env.local"
-    ),
+    path: path.resolve(process.cwd(), NODE_ENV === "development" ? ".env.local" : ".env"),
 });
 
 const parsedSchema = envSchema.safeParse(process.env);

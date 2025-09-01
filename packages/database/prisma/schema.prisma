@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== Enums ====================
+
+enum UserStatus {
+  ACTIVE
+  VERIFICATION_PENDING
+  DELETION_PENDING
+}
+
+enum AccountProvider {
+  GOOGLE
+  LOCAL
+  GITHUB
+}
+
+enum LoginMethod {
+  EMAIL
+  TOTP
+  BACKUP_CODES
+  OAUTH
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum MfaType {
+  EMAIL
+  TOTP
+  BACKUP_CODES
+}
+
+enum AuditEvent {
+  ACCOUNT_CREATED
+  LOGGED_IN
+  EMAIL_VERIFIED
+  SETUP_MFA
+  MFA_DISABLED
+  PASSWORD_CHANGED
+  LOGGED_OUT
+}
+
+// ==================== Website Models ====================
+
+model User {
+  id           String     @id() @default(uuid()) @db.Uuid
+  isMfaEnabled Boolean    @default(false)
+  status       UserStatus @default(VERIFICATION_PENDING)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  accounts      Account[]
+  emailAdresses EmailAddress[]
+  sessions      Session[]
+  tokens        Token[]
+  backupCodes   BackupCode[]
+  auditLogs     AuditLog[]
+  mfaFactors    MfaFactor[]
+}
+
+model Account {
+  id             String          @id @default(uuid()) @db.Uuid
+  providerUserId String          @unique
+  provider       AccountProvider @default(LOCAL)
+  userId         String          @db.Uuid
+  hashedPassword String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerUserId, provider])
+  @@index([userId])
+}
+
+model EmailAddress {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  isVerified Boolean  @default(false)
+  email      String   @unique @db.VarChar(320)
+  isPrimary  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sessions Session[]
+  tokens   Token[]
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Session {
+  id             String      @id @default(uuid()) @db.Uuid
+  emailAddressId String      @db.Uuid
+  refreshTokenId String      @unique
+  userId         String      @db.Uuid
+  loginMethod    LoginMethod @default(EMAIL)
+  userAgent      String?
+  ipAddress      String?
+  deviceName     String?
+  expiresAt      DateTime
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  isRevoked      Boolean     @default(false)
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAddress EmailAddress @relation(fields: [emailAddressId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Token {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  emailAddressId String?   @db.Uuid
+  type           TokenType
+  hashedSecret   String
+  expiresAt      DateTime
+  createdAt      DateTime  @default(now())
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailAddress EmailAddress? @relation(fields: [emailAddressId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model MfaFactor {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @db.Uuid
+  hashedSecret String?
+  type         MfaType
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model BackupCode {
+  id         String   @id @default(uuid()) @db.Uuid
+  hashedCode String
+  userId     String   @db.Uuid
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String     @id @default(uuid()) @db.Uuid
+  userId    String     @db.Uuid
+  event     AuditEvent
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

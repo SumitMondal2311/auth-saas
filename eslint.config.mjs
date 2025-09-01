@@ -5,9 +5,16 @@ import { config as nodeConfig } from "./packages/eslint-config/node.js";
 export default [
     ...nodeConfig.map((cfg) => ({
         ...cfg,
-        files: ["apps/api/**/*.{ts,tsx}"],
+        files: ["apps/api/src/**/*.{ts,tsx}", "packages/database/src/**/*.{ts,tsx}"],
     })),
     {
-        ignores: ["**/node_modules", "**/.turbo", "**/dist"],
+        ignores: [
+            "**/node_modules",
+            "**/.turbo",
+            "**/generated",
+            "**/dist",
+            "**/.next",
+            "**/migrations",
+        ],
     },
 ];

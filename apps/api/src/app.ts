@@ -2,14 +2,14 @@ export const startTime = new Date().getTime();
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { Request, Response } from "express";
+import express, { Express, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./configs/env.js";
 import { router } from "./routes/index.js";
 import { AppError } from "./utils/app-error.js";
 
-export const app = express();
+export const app: Express = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
