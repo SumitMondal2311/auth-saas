@@ -1,6 +1,8 @@
 import { Router } from "express";
-import { healthRouter } from "./health.route.js";
+import { healthController } from "../modules/health/health.controller.js";
+import { authRouter } from "./auth.routes.js";
 
 export const router: Router = Router();
 
-router.use("/health", healthRouter);
+router.get("/health", healthController);
+router.use("/auth", authRouter);

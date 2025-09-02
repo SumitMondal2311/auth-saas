@@ -3,18 +3,20 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "tsc",
+        "build": "NODE_ENV=development tsc",
         "check-types": "tsc --noEmit",
         "clean": "rm -rf .turbo dist",
-        "dev": "tsx watch ./src/server.ts",
+        "dev": "NODE_ENV=development tsx watch ./src/server.ts",
         "start": "NODE_ENV=development node ./dist/server.js",
         "start:dev": "node ./dist/server.js"
     },
     "dependencies": {
+        "argon2": "^0.44.0",
         "cookie-parser": "^1.4.7",
         "cors": "^2.8.5",
         "express": "^5.1.0",
         "helmet": "^8.1.0",
+        "ioredis": "^5.7.0",
         "morgan": "^1.10.0"
     },
     "devDependencies": {

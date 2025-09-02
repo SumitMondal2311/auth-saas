@@ -5,8 +5,11 @@ export const envSchema = z
         NODE_ENV: z.enum(["development", "test", "production"]),
         PORT: z.string().transform(Number).default(8888),
         DATABASE_URL: z.string(),
+        REDIS_URL: z.string(),
+        HMAC_SHA256_SECRET_KEY: z.base64(),
         WEB_ORIGIN: z.url(),
         API_ORIGIN: z.url().optional(),
+        EMAIL_VERIFICATION_TOKEN_EXPIRY: z.string().transform(Number),
         DATABASE_MAX_RETRIES: z.string().transform(Number),
     })
     .superRefine((arg, ctx) => {
@@ -22,3 +25,16 @@ export const envSchema = z
             }
         }
     });
+
+export const authSchema = z.object({
+    email: z.email("Invalid email").transform((email) => email.trim().toLowerCase()),
+    password: z
+        .string()
+        .trim()
+        .nonempty("Password is required")
+        .min(8, "Password must be atleast 8 characters long")
+        .regex(/[a-z]/, "Password must contain a lowercase letter")
+        .regex(/[A-Z]/, "Password must contain a uppercase letter")
+        .regex(/[0-9]/, "Password must contain a digit")
+        .regex(/[^a-z0-9A-Z]/, "Password must contain a speacial character"),
+});

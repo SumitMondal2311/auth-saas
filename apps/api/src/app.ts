@@ -2,7 +2,7 @@ export const startTime = new Date().getTime();
 
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import express, { Express, Request, Response } from "express";
+import express, { Express, NextFunction, Request, Response } from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./configs/env.js";
@@ -28,7 +28,7 @@ app.use(cookieParser());
 
 app.use("/api", router);
 
-app.use((err: Error, _req: Request, res: Response) => {
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof AppError) {
         console.error(err.details);
         return res.status(err.statusCode).json(err.toJSON());
