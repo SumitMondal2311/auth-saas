@@ -2,7 +2,7 @@ import { prisma } from "@auth-saas/database";
 import { hash } from "argon2";
 import { randomBytes } from "crypto";
 import { env } from "../../configs/env.js";
-import { redis } from "../../configs/redis.js";
+import { redis } from "../../lib/redis.js";
 import { addDurationToNow } from "../../utils/add-duration-to-now.js";
 import { AppError } from "../../utils/app-error.js";
 import { hmacSHA256 } from "../../utils/hmac-sha256.js";
@@ -91,7 +91,7 @@ export const signupService = async ({
 
     const tokenSecret = randomBytes(32).toString("hex");
     await prisma.$transaction(async (tx) => {
-        const user = await tx.user.create({
+        const newUser = await tx.user.create({
             data: {
                 status: "VERIFICATION_PENDING",
             },
@@ -101,7 +101,7 @@ export const signupService = async ({
                 email,
                 user: {
                     connect: {
-                        id: user.id,
+                        id: newUser.id,
                     },
                 },
             },

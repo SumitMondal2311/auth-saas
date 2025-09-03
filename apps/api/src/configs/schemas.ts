@@ -9,8 +9,14 @@ export const envSchema = z
         HMAC_SHA256_SECRET_KEY: z.base64(),
         WEB_ORIGIN: z.url(),
         API_ORIGIN: z.url().optional(),
+        ACCESS_TOKEN_EXPIRY: z.string().transform(Number),
+        JWT_AUD: z.string(),
+        JWT_ISS: z.string(),
+        JWT_KID: z.string(),
         EMAIL_VERIFICATION_TOKEN_EXPIRY: z.string().transform(Number),
+        SESSION_LIMIT: z.string().transform(Number),
         DATABASE_MAX_RETRIES: z.string().transform(Number),
+        REFRESH_TOKEN_EXPIRY: z.string().transform(Number),
     })
     .superRefine((arg, ctx) => {
         if (!arg.API_ORIGIN) {

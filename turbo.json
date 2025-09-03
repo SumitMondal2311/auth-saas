@@ -41,6 +41,10 @@
         "start": {
             "dependsOn": ["^start"],
             "cache": false
+        },
+        "start:dev": {
+            "dependsOn": ["^start:dev"],
+            "cache": false
         }
     }
 }

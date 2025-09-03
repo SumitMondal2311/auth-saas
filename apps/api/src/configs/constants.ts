@@ -1,5 +1,3 @@
-import { env } from "./env";
+import { env } from "./env.js";
 
-export const constant = {
-    IS_PRODUCTION: env.NODE_ENV === "production",
-};
+export const IS_PRODUCTION = env.NODE_ENV === "production";
