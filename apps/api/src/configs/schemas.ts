@@ -16,6 +16,7 @@ export const envSchema = z
         EMAIL_VERIFICATION_TOKEN_EXPIRY: z.string().transform(Number),
         SESSION_LIMIT: z.string().transform(Number),
         DATABASE_MAX_RETRIES: z.string().transform(Number),
+        RESEND_API_KEY: z.string(),
         REFRESH_TOKEN_EXPIRY: z.string().transform(Number),
     })
     .superRefine((arg, ctx) => {

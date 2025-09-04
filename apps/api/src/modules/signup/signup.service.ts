@@ -7,6 +7,7 @@ import { addDurationToNow } from "../../utils/add-duration-to-now.js";
 import { AppError } from "../../utils/app-error.js";
 import { hmacSHA256 } from "../../utils/hmac-sha256.js";
 import { redisKey } from "../../utils/redis-keys.js";
+import { sendVerificationEmail } from "../../emails/service.js";
 
 export const signupService = async ({
     ipAddress,
@@ -31,27 +32,25 @@ export const signupService = async ({
         if (emailAddressRecord.isVerified) {
             throw new AppError(409, {
                 message: "Email already in use",
-                details: "This email is already registered and verified.",
+                details: "Provided email is already registered and verified.",
             });
         }
 
-        const isRateLimited = await redis.exists(redisKey.signupEmailRateLimit(email));
+        const isRateLimited = await redis.exists(redisKey.authEmailRateLimit(email));
         if (isRateLimited) {
             throw new AppError(429, {
-                message: "Rate limit exceeded",
-                details:
-                    "Too Many Requests: You can request a new verification email every 60 seconds.",
+                message: "Please wait before requesting another email",
+                details: "Attempted to send two consecutive emails within a minute.",
             });
         }
 
-        const verificationResends = await redis.incr(redisKey.signupEmailResends(email));
+        const verificationResends = await redis.incr(redisKey.authEmailResends(email));
         if (verificationResends === 1) {
-            await redis.expire(redisKey.signupEmailResends(email), 24 * 60 * 60);
+            await redis.expire(redisKey.authEmailResends(email), 24 * 60 * 60);
         } else if (verificationResends >= 5) {
             throw new AppError(429, {
-                message: "Daily limit reached",
-                details:
-                    "Too Many Requests: You have reached the daily limit for verification emails.",
+                message: "You've reached today's limit for verification",
+                details: "Daily limit for verification has been reached for this email address.",
             });
         }
 
@@ -65,7 +64,7 @@ export const signupService = async ({
                     type: "EMAIL_VERIFICATION",
                 },
             });
-            await tx.token.create({
+            const token = await tx.token.create({
                 data: {
                     hashedSecret: hmacSHA256(tokenSecret),
                     type: "EMAIL_VERIFICATION",
@@ -82,10 +81,10 @@ export const signupService = async ({
                     },
                 },
             });
+            await sendVerificationEmail(email, `${token.id}.${tokenSecret}`);
         });
 
-        // resend a new verification email
-        await redis.set(redisKey.signupEmailRateLimit(email), "1", "EX", 60);
+        await redis.set(redisKey.authEmailRateLimit(email), "1", "EX", 60);
         return;
     }
 
@@ -130,7 +129,7 @@ export const signupService = async ({
                 },
             },
         });
-        await tx.token.create({
+        const token = await tx.token.create({
             data: {
                 hashedSecret: hmacSHA256(tokenSecret),
                 type: "EMAIL_VERIFICATION",
@@ -147,7 +146,7 @@ export const signupService = async ({
                 },
             },
         });
-        // send a verification email
+        await sendVerificationEmail(email, `${token.id}.${tokenSecret}`);
     });
 
     return;

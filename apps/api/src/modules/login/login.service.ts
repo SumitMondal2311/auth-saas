@@ -9,6 +9,7 @@ import { addDurationToNow } from "../../utils/add-duration-to-now.js";
 import { AppError } from "../../utils/app-error.js";
 import { hmacSHA256 } from "../../utils/hmac-sha256.js";
 import { redisKey } from "../../utils/redis-keys.js";
+import { sendVerificationEmail } from "../../emails/service.js";
 
 export const loginService = async ({
     ipAddress,
@@ -39,30 +40,28 @@ export const loginService = async ({
     if (!emailAddressRecord) {
         throw new AppError(404, {
             message: "Email not found",
-            details: "No account exists with the provided email address.",
+            details: "No account exists associated with provided email address in the database.",
         });
     }
 
     const { id: emailAddressId, userId } = emailAddressRecord;
 
     if (!emailAddressRecord.isVerified) {
-        const isRateLimited = await redis.exists(redisKey.loginEmailRateLimit(email));
+        const isRateLimited = await redis.exists(redisKey.authEmailRateLimit(email));
         if (isRateLimited) {
             throw new AppError(429, {
-                message: "Rate limit exceeded",
-                details:
-                    "Too Many Requests: You can request a new verification email every 60 seconds.",
+                message: "Please wait before requesting another email",
+                details: "Attempted to send two consecutive emails within a minute.",
             });
         }
 
-        const verificationResends = await redis.incr(redisKey.loginEmailResends(email));
+        const verificationResends = await redis.incr(redisKey.authEmailResends(email));
         if (verificationResends === 1) {
-            await redis.expire(redisKey.loginEmailResends(email), 24 * 60 * 60);
+            await redis.expire(redisKey.authEmailResends(email), 24 * 60 * 60);
         } else if (verificationResends >= 5) {
             throw new AppError(429, {
-                message: "Daily limit reached",
-                details:
-                    "Too Many Requests: You have reached the daily limit for verification emails.",
+                message: "You've reached today's limit for verification",
+                details: "Daily limit for verification has been reached for this email address.",
             });
         }
 
@@ -74,7 +73,7 @@ export const loginService = async ({
                     type: "EMAIL_VERIFICATION",
                 },
             });
-            return await tx.token.create({
+            const token = await tx.token.create({
                 data: {
                     hashedSecret: hmacSHA256(tokenSecret),
                     type: "EMAIL_VERIFICATION",
@@ -91,18 +90,19 @@ export const loginService = async ({
                     },
                 },
             });
+            await sendVerificationEmail(email, `${token.id}.${tokenSecret}`);
         });
 
-        // resend a new verification email
-        await redis.set(redisKey.loginEmailRateLimit(email), "1", "EX", 60);
+        await redis.set(redisKey.authEmailRateLimit(email), "1", "EX", 60);
 
         throw new AppError(202, {
-            message: "Verification email has been resent",
-            details: "Email is not verified.",
+            message:
+                "A verification link has been sent to your email, please check your inbox and verify your email",
+            details: "Provided email is not yet verified.",
         });
     }
 
-    const account = await prisma.account.findUnique({
+    const accountRecord = await prisma.account.findUnique({
         where: {
             providerUserId_provider: {
                 provider: "LOCAL",
@@ -114,19 +114,28 @@ export const loginService = async ({
         },
     });
 
-    if (!account) {
+    if (!accountRecord) {
         throw new AppError(404, {
             message: "Account not found",
-            details: "No account is linked to this email address.",
+            details:
+                "No local account exists associated with this email address as providerUserId.",
         });
     }
 
-    const passwordMatched = await verify(account.hashedPassword || "", password);
+    const { hashedPassword } = accountRecord;
+    if (!hashedPassword) {
+        throw new AppError(422, {
+            message: "Data inconistency",
+            details: "Account must store a hashed password, but stored NULL.",
+        });
+    }
+
+    const passwordMatched = await verify(hashedPassword, password);
     if (!passwordMatched) {
         await setTimeout(1000);
         throw new AppError(401, {
             message: "Invalid credentials",
-            details: "The provided password is incorrect.",
+            details: "Provided password is incorrect.",
         });
     }
 

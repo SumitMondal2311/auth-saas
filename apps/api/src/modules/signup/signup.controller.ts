@@ -26,7 +26,7 @@ const signupController = async (req: Request, res: Response, next: NextFunction)
 
     res.status(201).json({
         message:
-            "Signed up successfully. A verification link sent to your email. Please check your inbox.",
+            "Signed up successfully. A verification link has been sent to your email, please check your inbox and verify your email.",
     });
 };
 

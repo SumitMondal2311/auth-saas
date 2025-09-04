@@ -7,19 +7,15 @@ import { AppError } from "../utils/app-error.js";
 
 const secretsDir = resolve(process.cwd(), "secrets");
 if (existsSync(secretsDir) === false) {
-    throw new AppError(401, {
-        message: "Missing secrets directory",
-        details: "Missing secrets directory",
-    });
+    console.error("Missing secrets directory");
+    process.exit(1);
 }
 
 const privatePemPath = resolve(secretsDir, "private.pem");
 const publicPemPath = resolve(secretsDir, "public.pem");
 if (!existsSync(privatePemPath) || !existsSync(publicPemPath)) {
-    throw new AppError(401, {
-        message: "No pem files found",
-        details: "Missing private.pem or public.pem file",
-    });
+    console.error("Missing private.pem or public.pem file");
+    process.exit(1);
 }
 
 const privateKey = createPrivateKey(readFileSync(privatePemPath, "utf8"));
