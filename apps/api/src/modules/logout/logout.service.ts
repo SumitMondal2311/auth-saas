@@ -14,13 +14,11 @@ export const logoutService = async ({
     ipAddress?: string;
     userAgent?: string;
 }) => {
-    console.log("logout");
     const { payload } = await verifyToken(refreshToken);
     const { jti, sub, exp, sid, typ } = payload;
     if (!sid || !sub || !jti || typ !== "refresh") {
         throw new AppError(401, {
             message: "Invalid refresh token claims",
-            details: "Required claims are invalid or missing in the refresh token payload.",
         });
     }
 
@@ -35,7 +33,6 @@ export const logoutService = async ({
     if (!session) {
         throw new AppError(404, {
             message: "Session not found",
-            details: "No active session found in the database matches the refresh token claims.",
         });
     }
 

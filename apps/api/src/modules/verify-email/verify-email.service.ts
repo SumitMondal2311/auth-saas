@@ -38,14 +38,12 @@ export const verifyEmailService = async ({
     if (!tokenRecord) {
         throw new AppError(404, {
             message: "Token not found",
-            details: "No token exists with the ID from the provided token in the database.",
         });
     }
 
     if (tokenRecord.expiresAt <= new Date()) {
         throw new AppError(401, {
             message: "Token expired",
-            details: "Provided token is already expired and no longer valid.",
         });
     }
 
@@ -53,14 +51,12 @@ export const verifyEmailService = async ({
     if (!constantTimeCompare(hmacSHA256(secret), hashedSecret)) {
         throw new AppError(401, {
             message: "Invalid secret",
-            details: "Secret from the provided token doesn't match the stored one.",
         });
     }
 
     if (!emailAddressId) {
         throw new AppError(422, {
             message: "Data inconsistency",
-            details: "No email address found linked with the token.",
         });
     }
 
@@ -77,14 +73,12 @@ export const verifyEmailService = async ({
     if (!emailRecord) {
         throw new AppError(404, {
             message: "Email not found",
-            details: "No email address exists associated with the token in the database.",
         });
     }
 
     if (emailRecord.isVerified) {
         throw new AppError(409, {
             message: "Email is already verified",
-            details: "Provided email address has already been verified.",
         });
     }
 

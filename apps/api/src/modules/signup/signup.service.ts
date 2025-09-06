@@ -2,12 +2,12 @@ import { prisma } from "@auth-saas/database";
 import { hash } from "argon2";
 import { randomBytes } from "crypto";
 import { env } from "../../configs/env.js";
+import { sendVerificationEmail } from "../../emails/service.js";
 import { redis } from "../../lib/redis.js";
 import { addDurationToNow } from "../../utils/add-duration-to-now.js";
 import { AppError } from "../../utils/app-error.js";
 import { hmacSHA256 } from "../../utils/hmac-sha256.js";
 import { redisKey } from "../../utils/redis-keys.js";
-import { sendVerificationEmail } from "../../emails/service.js";
 
 export const signupService = async ({
     ipAddress,
@@ -32,7 +32,6 @@ export const signupService = async ({
         if (emailAddressRecord.isVerified) {
             throw new AppError(409, {
                 message: "Email already in use",
-                details: "Provided email is already registered and verified.",
             });
         }
 
@@ -40,7 +39,6 @@ export const signupService = async ({
         if (isRateLimited) {
             throw new AppError(429, {
                 message: "Please wait before requesting another email",
-                details: "Attempted to send two consecutive emails within a minute.",
             });
         }
 
@@ -50,7 +48,6 @@ export const signupService = async ({
         } else if (verificationResends >= 5) {
             throw new AppError(429, {
                 message: "You've reached today's limit for verification",
-                details: "Daily limit for verification has been reached for this email address.",
             });
         }
 

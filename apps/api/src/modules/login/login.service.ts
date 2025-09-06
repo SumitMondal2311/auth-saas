@@ -39,8 +39,7 @@ export const loginService = async ({
 
     if (!emailAddressRecord) {
         throw new AppError(404, {
-            message: "Email not found",
-            details: "No account found in the database associated with the provided email address.",
+            message: "Email address not found.",
         });
     }
 
@@ -50,8 +49,7 @@ export const loginService = async ({
         const isRateLimited = await redis.exists(redisKey.authEmailRateLimit(email));
         if (isRateLimited) {
             throw new AppError(429, {
-                message: "Please wait before requesting another email",
-                details: "Attempted to send two consecutive emails within a minute.",
+                message: "Please wait before requesting another email.",
             });
         }
 
@@ -61,7 +59,6 @@ export const loginService = async ({
         } else if (verificationResends >= 5) {
             throw new AppError(429, {
                 message: "You've reached today's limit for verification",
-                details: "Daily limit for verification has been reached for this email address.",
             });
         }
 
@@ -98,7 +95,6 @@ export const loginService = async ({
         throw new AppError(202, {
             message:
                 "A verification link has been sent to your email, please check your inbox and verify your email",
-            details: "Provided email address is not yet verified.",
         });
     }
 
@@ -116,9 +112,7 @@ export const loginService = async ({
 
     if (!accountRecord) {
         throw new AppError(404, {
-            message: "Account not found",
-            details:
-                "No local account exists associated with this email address as providerUserId.",
+            message: "Account not found.",
         });
     }
 
@@ -126,7 +120,6 @@ export const loginService = async ({
     if (!hashedPassword) {
         throw new AppError(422, {
             message: "Detected data inconsistency",
-            details: "Hashed-Password is stored as NULL in the account record.",
         });
     }
 
@@ -135,7 +128,6 @@ export const loginService = async ({
         await setTimeout(1000);
         throw new AppError(401, {
             message: "Invalid credentials",
-            details: "Provided password is incorrect.",
         });
     }
 

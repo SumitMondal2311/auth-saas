@@ -15,7 +15,6 @@ const verifyEmailController = async (req: Request, res: Response, next: NextFunc
         return next(
             new AppError(400, {
                 message: "Invalid or missing token",
-                details: "Provided token is either missing or not a string.",
             })
         );
     }
@@ -24,14 +23,12 @@ const verifyEmailController = async (req: Request, res: Response, next: NextFunc
     if (!tokenId || !secret) {
         throw new AppError(400, {
             message: "Invalid token format",
-            details: "Provided token is not in the correct format",
         });
     }
 
     if (validateUUID(tokenId) === false) {
         throw new AppError(400, {
             message: "Invalid token ID",
-            details: "ID from the provided token is not a valid UUID",
         });
     }
 

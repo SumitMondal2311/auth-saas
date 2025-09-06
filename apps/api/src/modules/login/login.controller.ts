@@ -15,7 +15,6 @@ const loginController = async (req: Request, res: Response, next: NextFunction) 
         return next(
             new AppError(400, {
                 message: parsedSchema.error.issues[0].message,
-                details: "Invalid input",
             })
         );
     }

@@ -30,7 +30,6 @@ app.use("/api", router);
 
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
     if (err instanceof AppError) {
-        console.error(err.details);
         return res.status(err.statusCode).json(err.toJSON());
     }
 

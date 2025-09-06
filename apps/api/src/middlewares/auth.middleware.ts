@@ -10,7 +10,6 @@ const authMiddleware = async (req: Request, _res: Response, next: NextFunction) 
         return next(
             new AppError(401, {
                 message: "Missing authorization header",
-                details: "Request doesn't contain any authorization header.",
             })
         );
     }
@@ -20,20 +19,16 @@ const authMiddleware = async (req: Request, _res: Response, next: NextFunction) 
         return next(
             new AppError(401, {
                 message: "Invalid authorization header",
-                details: "Expected format: Bearer <access_token>",
             })
         );
     }
 
-    console.log("auth-middleware");
     const { payload } = await verifyToken(accessToken);
-    console.log(payload);
     const { sub, sid, typ } = payload;
     if (!sub || !sid || typ !== "access") {
         return next(
             new AppError(401, {
                 message: "Invalid access token claims",
-                details: "Required claims are invalid or missing in the access token payload.",
             })
         );
     }
@@ -51,7 +46,6 @@ const authMiddleware = async (req: Request, _res: Response, next: NextFunction) 
     if (!sessionRecord) {
         throw new AppError(401, {
             message: "Session not found",
-            details: "No active session found in the database matches the access token claims.",
         });
     }
 

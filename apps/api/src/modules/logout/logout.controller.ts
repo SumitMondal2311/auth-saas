@@ -11,7 +11,6 @@ const logoutController = async (req: Request, res: Response, next: NextFunction)
         return next(
             new AppError(401, {
                 message: "Missing refresh token",
-                details: "Cookies doesn't contain any '__HOST-auth-session'.",
             })
         );
     }
