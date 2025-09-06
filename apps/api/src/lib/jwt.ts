@@ -47,20 +47,25 @@ export const verifyToken = async (token: string): Promise<JWTVerifyResult<AuthJW
     try {
         return await jwtVerify(token, publicKey);
     } catch (error) {
-        if (error instanceof errors.JWTExpired) {
+        if (error instanceof errors.JWSSignatureVerificationFailed) {
             throw new AppError(401, {
-                message: "Token has expired",
-                details: error.message,
-            });
-        } else if (error instanceof errors.JWTClaimValidationFailed) {
-            throw new AppError(401, {
-                message: "Token is not yet valid",
-                details: error.message,
+                message: error.message,
+                details: "Provided token may be tampered or signed with an invalid key",
             });
         } else if (error instanceof errors.JWTInvalid) {
             throw new AppError(401, {
-                message: "Token is either malformed or broken",
-                details: error.message,
+                message: error.message,
+                details: "Provided token is either malformed or broken",
+            });
+        } else if (error instanceof errors.JWTClaimValidationFailed) {
+            throw new AppError(401, {
+                message: error.message,
+                details: "Provided token claims are invalid",
+            });
+        } else if (error instanceof errors.JWTExpired) {
+            throw new AppError(401, {
+                message: error.message,
+                details: "Provided token has expired and no longer valid.",
             });
         }
 

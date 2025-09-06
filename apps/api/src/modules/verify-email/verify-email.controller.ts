@@ -43,7 +43,7 @@ const verifyEmailController = async (req: Request, res: Response, next: NextFunc
     });
 
     res.status(200)
-        .cookie("__refresh_token__", refreshToken, {
+        .cookie("__HOST-auth-session", refreshToken, {
             secure: IS_PRODUCTION,
             httpOnly: true,
             maxAge: env.REFRESH_TOKEN_EXPIRY * 1000,

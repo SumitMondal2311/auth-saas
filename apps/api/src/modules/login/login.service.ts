@@ -3,13 +3,13 @@ import { verify } from "argon2";
 import { randomBytes, randomUUID } from "crypto";
 import { setTimeout } from "timers/promises";
 import { env } from "../../configs/env.js";
+import { sendVerificationEmail } from "../../emails/service.js";
 import { signToken } from "../../lib/jwt.js";
 import { redis } from "../../lib/redis.js";
 import { addDurationToNow } from "../../utils/add-duration-to-now.js";
 import { AppError } from "../../utils/app-error.js";
 import { hmacSHA256 } from "../../utils/hmac-sha256.js";
 import { redisKey } from "../../utils/redis-keys.js";
-import { sendVerificationEmail } from "../../emails/service.js";
 
 export const loginService = async ({
     ipAddress,
@@ -40,7 +40,7 @@ export const loginService = async ({
     if (!emailAddressRecord) {
         throw new AppError(404, {
             message: "Email not found",
-            details: "No account exists associated with provided email address in the database.",
+            details: "No account found in the database associated with the provided email address.",
         });
     }
 
@@ -98,7 +98,7 @@ export const loginService = async ({
         throw new AppError(202, {
             message:
                 "A verification link has been sent to your email, please check your inbox and verify your email",
-            details: "Provided email is not yet verified.",
+            details: "Provided email address is not yet verified.",
         });
     }
 
@@ -125,8 +125,8 @@ export const loginService = async ({
     const { hashedPassword } = accountRecord;
     if (!hashedPassword) {
         throw new AppError(422, {
-            message: "Data inconistency",
-            details: "Account must store a hashed password, but stored NULL.",
+            message: "Detected data inconsistency",
+            details: "Hashed-Password is stored as NULL in the account record.",
         });
     }
 
